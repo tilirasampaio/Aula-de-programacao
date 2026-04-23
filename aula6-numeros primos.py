@@ -9,6 +9,6 @@ while i<=100:
         if controle == 2:
             print (i)
         j -= 1
-
-
+      
+        
 i += 1
