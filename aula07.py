@@ -2,7 +2,7 @@ i = 1
 controle = 0
 
 div = int(input("Qual número você quer verificar: "))
-limite = int(input("Até´onde você quer verificar: "))
+limite = int(input("Até onde você quer verificar: "))
 
 
 while i <= limite:
