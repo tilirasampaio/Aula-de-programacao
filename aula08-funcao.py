@@ -39,4 +39,4 @@ elif opcao == "potência" :
     potencia(num1, num2)
 
 else :
-    print("Não sei fazer ")
+    print("Não sei fazer")
