@@ -1,19 +1,23 @@
+# =========================================================
+# MINI BLOX FRUITS - COM SISTEMA DE FRUTAS
+# =========================================================
+
 import tkinter as tk
 import random
 import math
 
 # =========================================================
-# CONFIG
+# JANELA
 # =========================================================
 
-LARGURA = 1400
-ALTURA = 800
+LARGURA = 1280
+ALTURA = 720
+
+MAPA_LARGURA = 4000
+MAPA_ALTURA = 2500
 
 janela = tk.Tk()
-janela.title("Blox Fruits Ultimate Edition")
-
-janela.resizable(False, False)
-janela.focus_force()
+janela.title("Mini Blox Fruits Fruits Update")
 
 canvas = tk.Canvas(
     janela,
@@ -22,15 +26,23 @@ canvas = tk.Canvas(
     bg="#6ec6ff",
     highlightthickness=0
 )
+
 canvas.pack()
+
+# =========================================================
+# CAMERA
+# =========================================================
+
+camera_x = 0
+camera_y = 0
 
 # =========================================================
 # PLAYER
 # =========================================================
 
 player = {
-    "x": 400,
-    "y": 300,
+    "x": 800,
+    "y": 700,
 
     "vida": 100,
     "max_vida": 100,
@@ -41,94 +53,121 @@ player = {
     "level": 1,
     "xp": 0,
 
-    "dano": 20,
-
     "money": 0,
 
-    "fruta": "Fire",
+    "dano": 20,
 
     "kills": 0,
 
-    "dash": 0,
+    "vel": 5,
 
-    "haki": False,
+    "fruta": "Fogo",
+
+    "espada": "Katana",
 
     "transformado": False
 }
 
 # =========================================================
-# INVENTARIO
+# FRUTAS
 # =========================================================
 
-inventario = [
-    "Katana",
-    "Fire Fruit"
-]
+frutas = {
 
-# =========================================================
-# QUEST
-# =========================================================
+    "Fogo": {
+        "cor": "orange",
+        "dano": 2,
+        "energia": 30,
+        "raio": 240,
+        "efeito": "burn"
+    },
 
-quest = {
-    "nome": "Derrote 15 inimigos",
-    "progresso": 0,
-    "objetivo": 15,
-    "recompensa": 500,
-    "completa": False
+    "Gelo": {
+        "cor": "cyan",
+        "dano": 1.5,
+        "energia": 25,
+        "raio": 220,
+        "efeito": "slow"
+    },
+
+    "Luz": {
+        "cor": "yellow",
+        "dano": 2.5,
+        "energia": 35,
+        "raio": 300,
+        "efeito": "flash"
+    },
+
+    "Magma": {
+        "cor": "red",
+        "dano": 3,
+        "energia": 40,
+        "raio": 200,
+        "efeito": "explode"
+    },
+
+    "Trevas": {
+        "cor": "purple",
+        "dano": 2.2,
+        "energia": 35,
+        "raio": 260,
+        "efeito": "pull"
+    }
 }
+
+# =========================================================
+# FRUTAS SPAWNADAS
+# =========================================================
+
+frutas_spawnadas = []
+
+def spawnar_fruta():
+
+    nome = random.choice(list(frutas.keys()))
+
+    frutas_spawnadas.append({
+
+        "x": random.randint(300, MAPA_LARGURA - 300),
+        "y": random.randint(300, MAPA_ALTURA - 300),
+
+        "nome": nome,
+
+        "tempo": 1800
+    })
+
+for _ in range(4):
+    spawnar_fruta()
 
 # =========================================================
 # EFEITOS
 # =========================================================
 
 efeitos = []
-
-# =========================================================
-# NPCS
-# =========================================================
-
-npcs = [
-    {
-        "x": 250,
-        "y": 500,
-        "nome": "Quest NPC",
-        "fala": "Derrote inimigos!"
-    },
-
-    {
-        "x": 700,
-        "y": 500,
-        "nome": "Haki Master",
-        "fala": "Pressione H!"
-    },
-
-    {
-        "x": 1150,
-        "y": 500,
-        "nome": "Boat Dealer",
-        "fala": "Pegue um barco!"
-    }
-]
+particulas = []
 
 # =========================================================
 # ILHAS
 # =========================================================
 
 ilhas = [
-    {"x": 200, "y": 560, "cor": "#3cb043"},
-    {"x": 700, "y": 530, "cor": "#2faa35"},
-    {"x": 1200, "y": 560, "cor": "#46b94d"},
+    {"x": 700, "y": 800, "r": 220},
+    {"x": 1800, "y": 600, "r": 260},
+    {"x": 3000, "y": 1200, "r": 300},
 ]
 
 # =========================================================
-# BARCO
+# NPCS
 # =========================================================
 
-barco = {
-    "ativo": False,
-    "x": 0,
-    "y": 0
-}
+npcs = [
+
+    {
+        "x": 1800,
+        "y": 600,
+        "nome": "Fruit Master",
+        "fala": "Pegue frutas pelo mapa!"
+    }
+]
 
 # =========================================================
 # INIMIGOS
@@ -140,42 +179,34 @@ def criar_inimigo():
 
     return {
 
-        "x": random.randint(50, 1300),
-        "y": random.randint(50, 650),
+        "x": random.randint(200, 3800),
+        "y": random.randint(200, 2200),
 
-        "vida": 60,
-        "max_vida": 60,
+        "vida": 70,
+        "max_vida": 70,
 
-        "vel": random.uniform(1, 2),
+        "vel": random.uniform(1.5, 2.5),
 
-        "boss": False
+        "boss": False,
+
+        "hit": 0,
+
+        "queimando": 0,
+        "slow": 0,
+        "flash": 0
     }
 
-def criar_boss():
-
-    return {
-
-        "x": random.randint(300, 1100),
-        "y": random.randint(100, 500),
-
-        "vida": 500,
-        "max_vida": 500,
-
-        "vel": 0.8,
-
-        "boss": True
-    }
-
-for _ in range(10):
+for _ in range(12):
     inimigos.append(criar_inimigo())
 
-boss_spawnado = False
-
 # =========================================================
-# CONTROLES
+# TECLAS
 # =========================================================
 
 teclas = set()
+
+cooldown_espada = 0
+cooldown_fruta = 0
 
 def tecla_press(event):
 
@@ -185,36 +216,27 @@ def tecla_press(event):
         atacar()
 
     if event.keysym.lower() == "f":
-        poder_fruta()
-
-    if event.keysym.lower() == "h":
-        ativar_haki()
-
-    if event.keysym.lower() == "t":
-        transformar()
-
-    if event.keysym.lower() == "b":
-        spawnar_barco()
+        usar_fruta()
 
 def tecla_release(event):
-    teclas.discard(event.keysym)
+
+    if event.keysym in teclas:
+        teclas.remove(event.keysym)
 
 janela.bind("<KeyPress>", tecla_press)
 janela.bind("<KeyRelease>", tecla_release)
 
 # =========================================================
-# LEVEL
+# XP
 # =========================================================
 
 def ganhar_xp(valor):
 
     player["xp"] += valor
 
-    necessario = player["level"] * 60
+    while player["xp"] >= player["level"] * 60:
 
-    while player["xp"] >= necessario:
-
-        player["xp"] -= necessario
+        player["xp"] -= player["level"] * 60
 
         player["level"] += 1
 
@@ -223,7 +245,51 @@ def ganhar_xp(valor):
 
         player["dano"] += 5
 
-        necessario = player["level"] * 60
+# =========================================================
+# PARTICULAS
+# =========================================================
+
+def criar_particulas(x, y, cor):
+
+    for _ in range(10):
+
+        particulas.append({
+
+            "x": x,
+            "y": y,
+
+            "dx": random.uniform(-4, 4),
+            "dy": random.uniform(-4, 4),
+
+            "vida": random.randint(10, 25),
+
+            "cor": cor
+        })
+
+# =========================================================
+# PEGAR FRUTA
+# =========================================================
+
+def verificar_frutas():
+
+    for fruta in frutas_spawnadas[:]:
+
+        dist = math.hypot(
+            fruta["x"] - player["x"],
+            fruta["y"] - player["y"]
+        )
+
+        if dist < 50:
+
+            player["fruta"] = fruta["nome"]
+
+            criar_particulas(
+                fruta["x"],
+                fruta["y"],
+                frutas[fruta["nome"]]["cor"]
+            )
+
+            frutas_spawnadas.remove(fruta)
 
 # =========================================================
 # ATAQUE
@@ -231,26 +297,42 @@ def ganhar_xp(valor):
 
 def atacar():
 
+    global cooldown_espada
+
+    if cooldown_espada > 0:
+        return
+
+    cooldown_espada = 12
+
     efeitos.append({
-        "tipo": "espada",
+
+        "tipo": "slash",
         "tempo": 8
     })
 
-    dano = player["dano"]
-
-    if player["haki"]:
-        dano *= 2
-
     for inimigo in inimigos[:]:
 
-        dist = math.hypot(
-            inimigo["x"] - player["x"],
-            inimigo["y"] - player["y"]
-        )
+        dx = inimigo["x"] - player["x"]
+        dy = inimigo["y"] - player["y"]
+
+        dist = math.hypot(dx, dy)
 
         if dist < 100:
 
-            inimigo["vida"] -= dano
+            inimigo["vida"] -= player["dano"]
+
+            inimigo["hit"] = 5
+
+            criar_particulas(
+                inimigo["x"],
+                inimigo["y"],
+                "red"
+            )
+
+            if dist != 0:
+
+                inimigo["x"] += (dx / dist) * 40
+                inimigo["y"] += (dy / dist) * 40
 
             if inimigo["vida"] <= 0:
                 matar_inimigo(inimigo)
@@ -259,64 +341,92 @@ def atacar():
 # FRUTA
 # =========================================================
 
-def poder_fruta():
+def usar_fruta():
 
-    if player["energia"] < 25:
+    global cooldown_fruta
+
+    fruta_nome = player["fruta"]
+
+    info = frutas[fruta_nome]
+
+    if cooldown_fruta > 0:
         return
 
-    player["energia"] -= 25
+    if player["energia"] < info["energia"]:
+        return
+
+    player["energia"] -= info["energia"]
+
+    cooldown_fruta = 45
 
     efeitos.append({
-        "tipo": "fogo",
-        "tempo": 15
+
+        "tipo": "fruta",
+        "tempo": 18,
+
+        "cor": info["cor"],
+        "raio": info["raio"]
     })
 
     for inimigo in inimigos[:]:
 
-        dist = math.hypot(
-            inimigo["x"] - player["x"],
-            inimigo["y"] - player["y"]
-        )
+        dx = inimigo["x"] - player["x"]
+        dy = inimigo["y"] - player["y"]
 
-        if dist < 200:
+        dist = math.hypot(dx, dy)
 
-            inimigo["vida"] -= player["dano"] * 2
+        if dist < info["raio"]:
+
+            dano = player["dano"] * info["dano"]
+
+            inimigo["vida"] -= dano
+
+            inimigo["hit"] = 8
+
+            criar_particulas(
+                inimigo["x"],
+                inimigo["y"],
+                info["cor"]
+            )
+
+            efeito = info["efeito"]
+
+            # fogo
+            if efeito == "burn":
+                inimigo["queimando"] = 120
+
+            # gelo
+            elif efeito == "slow":
+                inimigo["slow"] = 180
+
+            # luz
+            elif efeito == "flash":
+                inimigo["flash"] = 60
+
+            # magma
+            elif efeito == "explode":
+
+                inimigo["vida"] -= 20
+
+                criar_particulas(
+                    inimigo["x"],
+                    inimigo["y"],
+                    "red"
+                )
+
+            # trevas
+            elif efeito == "pull":
+
+                if dist != 0:
+
+                    inimigo["x"] -= (dx / dist) * 80
+                    inimigo["y"] -= (dy / dist) * 80
 
             if inimigo["vida"] <= 0:
                 matar_inimigo(inimigo)
 
 # =========================================================
-# HAKI
-# =========================================================
-
-def ativar_haki():
-
-    player["haki"] = not player["haki"]
-
-# =========================================================
-# TRANSFORMAÇÃO
-# =========================================================
-
-def transformar():
-
-    if player["level"] < 5:
-        return
-
-    player["transformado"] = not player["transformado"]
-
-# =========================================================
-# BARCO
-# =========================================================
-
-def spawnar_barco():
-
-    barco["ativo"] = True
-
-    barco["x"] = player["x"]
-    barco["y"] = 650
-
-# =========================================================
-# MORTE
+# MATAR
 # =========================================================
 
 def matar_inimigo(inimigo):
@@ -324,86 +434,112 @@ def matar_inimigo(inimigo):
     if inimigo in inimigos:
         inimigos.remove(inimigo)
 
-    if inimigo["boss"]:
+    ganhar_xp(25)
 
-        ganhar_xp(300)
-        player["money"] += 800
-
-    else:
-
-        ganhar_xp(30)
-        player["money"] += random.randint(20, 40)
+    player["money"] += random.randint(15, 40)
 
     player["kills"] += 1
-
-    if not quest["completa"]:
-
-        quest["progresso"] += 1
-
-        if quest["progresso"] >= quest["objetivo"]:
-
-            quest["completa"] = True
-            player["money"] += quest["recompensa"]
 
 # =========================================================
 # PERSONAGEM
 # =========================================================
 
-def desenhar_personagem(x, y, cor, nome=None):
+def desenhar_personagem(x, y, cor, nome=None, hit=0):
 
-    brilho = "yellow" if player["transformado"] else cor
+    x -= camera_x
+    y -= camera_y
+
+    if hit > 0:
+        cor = "white"
+
+    # aura fruta
+    fruta_cor = frutas[player["fruta"]]["cor"]
+
+    if cor == "blue":
+
+        canvas.create_oval(
+            x - 35,
+            y - 55,
+
+            x + 35,
+            y + 45,
+
+            outline=fruta_cor,
+            width=3
+        )
 
     # pernas
-    canvas.create_line(x-8,y+20,x-12,y+35,width=4)
-    canvas.create_line(x+8,y+20,x+12,y+35,width=4)
+    canvas.create_line(
+        x - 8, y + 20,
+        x - 12, y + 35,
+        width=4
+    )
+
+    canvas.create_line(
+        x + 8, y + 20,
+        x + 12, y + 35,
+        width=4
+    )
 
     # corpo
     canvas.create_rectangle(
-        x-12,y-5,
-        x+12,y+20,
-        fill=brilho,
-        outline="black"
+        x - 12,
+        y - 5,
+
+        x + 12,
+        y + 20,
+
+        fill=cor
     )
 
     # braços
-    canvas.create_line(x-12,y,x-25,y+10,width=4)
-    canvas.create_line(x+12,y,x+25,y+10,width=4)
+    canvas.create_line(
+        x - 12, y,
+        x - 24, y + 10,
+        width=4
+    )
+
+    canvas.create_line(
+        x + 12, y,
+        x + 24, y + 10,
+        width=4
+    )
 
     # cabeça
     canvas.create_oval(
-        x-12,y-30,
-        x+12,y-5,
+        x - 12,
+        y - 30,
+
+        x + 12,
+        y - 5,
+
         fill="#f1c27d"
     )
 
-    # cabelo anime
-    canvas.create_polygon(
-        x-12,y-18,
-        x-6,y-35,
-        x,y-22,
-        x+6,y-35,
-        x+12,y-18,
+    # cabelo
+    canvas.create_arc(
+        x - 13,
+        y - 32,
+
+        x + 13,
+        y - 12,
+
+        start=0,
+        extent=180,
+
         fill="black"
     )
-
-    # haki aura
-    if player["haki"]:
-
-        canvas.create_oval(
-            x-30,y-45,
-            x+30,y+40,
-            outline="black",
-            width=3
-        )
 
     if nome:
 
         canvas.create_text(
             x,
-            y-50,
+            y - 45,
+
             text=nome,
             fill="white",
-            font=("Arial",10,"bold")
+
+            font=("Arial", 10, "bold")
         )
 
 # =========================================================
@@ -412,16 +548,15 @@ def desenhar_personagem(x, y, cor, nome=None):
 
 def atualizar():
 
-    global boss_spawnado
+    global camera_x
+    global camera_y
 
-    velocidade = 5
+    global cooldown_espada
+    global cooldown_fruta
 
-    if "Shift_L" in teclas:
-        velocidade = 10
+    velocidade = player["vel"]
 
-    if player["transformado"]:
-        velocidade = 8
-
+    # movimento
     if "Left" in teclas:
         player["x"] -= velocidade
 
@@ -434,41 +569,85 @@ def atualizar():
     if "Down" in teclas:
         player["y"] += velocidade
 
-    player["x"] = max(20, min(LARGURA-20, player["x"]))
-    player["y"] = max(20, min(ALTURA-20, player["y"]))
+    player["x"] = max(0, min(MAPA_LARGURA, player["x"]))
+    player["y"] = max(0, min(MAPA_ALTURA, player["y"]))
+
+    # camera
+    camera_x += (
+        (player["x"] - LARGURA // 2) - camera_x
+    ) * 0.08
+
+    camera_y += (
+        (player["y"] - ALTURA // 2) - camera_y
+    ) * 0.08
 
     # energia
     if player["energia"] < player["max_energia"]:
-        player["energia"] += 0.4
+        player["energia"] += 0.2
+
+    # cooldowns
+    if cooldown_espada > 0:
+        cooldown_espada -= 1
+
+    if cooldown_fruta > 0:
+        cooldown_fruta -= 1
+
+    # frutas
+    verificar_frutas()
 
     # inimigos
     for inimigo in inimigos:
 
+        velocidade_inimigo = inimigo["vel"]
+
+        # gelo
+        if inimigo["slow"] > 0:
+
+            velocidade_inimigo *= 0.4
+
+            inimigo["slow"] -= 1
+
+        # fogo
+        if inimigo["queimando"] > 0:
+
+            inimigo["vida"] -= 0.08
+
+            inimigo["queimando"] -= 1
+
+            if random.randint(1, 5) == 1:
+
+                criar_particulas(
+                    inimigo["x"],
+                    inimigo["y"],
+                    "orange"
+                )
+
+        # luz
+        if inimigo["flash"] > 0:
+
+            velocidade_inimigo = 0
+
+            inimigo["flash"] -= 1
+
         dx = player["x"] - inimigo["x"]
         dy = player["y"] - inimigo["y"]
 
-        dist = math.hypot(dx,dy)
+        dist = math.hypot(dx, dy)
 
         if dist > 0:
 
-            inimigo["x"] += (dx/dist) * inimigo["vel"]
-            inimigo["y"] += (dy/dist) * inimigo["vel"]
+            inimigo["x"] += (dx / dist) * velocidade_inimigo
+            inimigo["y"] += (dy / dist) * velocidade_inimigo
 
-        if dist < 30:
+        if dist < 40:
+            player["vida"] -= 0.1
 
-            if inimigo["boss"]:
-                player["vida"] -= 0.5
-            else:
-                player["vida"] -= 0.15
+        if inimigo["hit"] > 0:
+            inimigo["hit"] -= 1
 
     # respawn
-    while len([i for i in inimigos if not i["boss"]]) < 10:
+    while len(inimigos) < 12:
         inimigos.append(criar_inimigo())
-
-    if player["level"] >= 5 and not boss_spawnado:
-
-        inimigos.append(criar_boss())
-        boss_spawnado = True
 
     # =====================================================
     # DESENHO
@@ -478,122 +657,89 @@ def atualizar():
 
     # céu
     canvas.create_rectangle(
-        0,0,
-        LARGURA,ALTURA,
+        0, 0,
+        LARGURA, ALTURA,
         fill="#6ec6ff",
         outline=""
     )
 
-    # sol
-    canvas.create_oval(
-        50,50,
-        150,150,
-        fill="yellow",
-        outline=""
-    )
-
-    # água
-    canvas.create_rectangle(
-        0,620,
-        LARGURA,ALTURA,
-        fill="#1f75fe",
-        outline=""
-    )
-
-    # ondas
-    for i in range(0,LARGURA,40):
-
-        canvas.create_arc(
-            i,620,
-            i+40,650,
-            start=0,
-            extent=180,
-            style="arc",
-            width=2
-        )
-
     # ilhas
     for ilha in ilhas:
 
+        x = ilha["x"] - camera_x
+        y = ilha["y"] - camera_y
+
         canvas.create_oval(
-            ilha["x"]-130,
-            ilha["y"]-40,
+            x - ilha["r"],
+            y - 70,
 
-            ilha["x"]+130,
-            ilha["y"]+40,
+            x + ilha["r"],
+            y + 70,
 
-            fill="#9c6b30",
+            fill="#8b5a2b",
             outline=""
         )
 
         canvas.create_rectangle(
-            ilha["x"]-130,
-            ilha["y"],
+            x - ilha["r"],
+            y,
 
-            ilha["x"]+130,
-            ilha["y"]+40,
+            x + ilha["r"],
+            y + 50,
 
-            fill=ilha["cor"],
+            fill="#3cb043",
             outline=""
         )
 
-        # palmeira
-        canvas.create_line(
-            ilha["x"],
-            ilha["y"]-60,
+    # frutas
+    for fruta in frutas_spawnadas[:]:
 
-            ilha["x"],
-            ilha["y"],
+        fx = fruta["x"] - camera_x
+        fy = fruta["y"] - camera_y
 
-            width=10,
-            fill="#8b5a2b"
-        )
+        cor = frutas[fruta["nome"]]["cor"]
 
+        # brilho
         canvas.create_oval(
-            ilha["x"]-30,
-            ilha["y"]-90,
+            fx - 22,
+            fy - 22,
 
-            ilha["x"]+30,
-            ilha["y"]-40,
+            fx + 22,
+            fy + 22,
 
-            fill="green"
+            fill=cor,
+            outline="white",
+            width=2
         )
 
-    # barco
-    if barco["ativo"]:
+        # fruta
+        canvas.create_oval(
+            fx - 15,
+            fy - 15,
 
-        canvas.create_rectangle(
-            barco["x"]-40,
-            barco["y"]-10,
+            fx + 15,
+            fy + 15,
 
-            barco["x"]+40,
-            barco["y"]+10,
-
-            fill="#8b5a2b"
+            fill=cor
         )
 
-        canvas.create_line(
-            barco["x"],
-            barco["y"]-50,
+        canvas.create_text(
+            fx,
+            fy - 28,
 
-            barco["x"],
-            barco["y"]-10,
+            text=fruta["nome"],
+            fill="white",
 
-            width=4
+            font=("Arial", 9, "bold")
         )
 
-        canvas.create_polygon(
-            barco["x"],
-            barco["y"]-50,
+        fruta["tempo"] -= 1
 
-            barco["x"],
-            barco["y"]-20,
+        if fruta["tempo"] <= 0:
 
-            barco["x"]+30,
-            barco["y"]-35,
+            frutas_spawnadas.remove(fruta)
 
-            fill="white"
-        )
+            spawnar_fruta()
 
     # npcs
     for npc in npcs:
@@ -605,38 +751,35 @@ def atualizar():
             npc["nome"]
         )
 
-        dist = math.hypot(
-            player["x"] - npc["x"],
-            player["y"] - npc["y"]
+    # inimigos
+    for inimigo in inimigos:
+
+        desenhar_personagem(
+            inimigo["x"],
+            inimigo["y"],
+            "red",
+            "Bandit",
+            inimigo["hit"]
         )
 
-        if dist < 100:
-
-            canvas.create_text(
-                npc["x"],
-                npc["y"]-70,
-                text=npc["fala"],
-                fill="yellow",
-                font=("Arial",10,"bold")
-            )
-
     # player
-    cor_player = "orange" if player["transformado"] else "blue"
-
     desenhar_personagem(
         player["x"],
         player["y"],
-        cor_player,
+        "blue",
         f"Lv {player['level']}"
     )
 
     # espada
-    canvas.create_line(
-        player["x"]+20,
-        player["y"],
+    px = player["x"] - camera_x
+    py = player["y"] - camera_y
 
-        player["x"]+45,
-        player["y"]-25,
+    canvas.create_line(
+        px + 20,
+        py,
+
+        px + 42,
+        py - 22,
 
         width=5,
         fill="silver"
@@ -645,29 +788,29 @@ def atualizar():
     # efeitos
     for efeito in efeitos[:]:
 
-        if efeito["tipo"] == "espada":
+        if efeito["tipo"] == "slash":
 
             canvas.create_oval(
-                player["x"]-100,
-                player["y"]-100,
+                px - 100,
+                py - 100,
 
-                player["x"]+100,
-                player["y"]+100,
+                px + 100,
+                py + 100,
 
                 outline="white",
                 width=4
             )
 
-        if efeito["tipo"] == "fogo":
+        elif efeito["tipo"] == "fruta":
 
             canvas.create_oval(
-                player["x"]-200,
-                player["y"]-200,
+                px - efeito["raio"],
+                py - efeito["raio"],
 
-                player["x"]+200,
-                player["y"]+200,
+                px + efeito["raio"],
+                py + efeito["raio"],
 
-                outline="orange",
+                outline=efeito["cor"],
                 width=6
             )
 
@@ -676,211 +819,148 @@ def atualizar():
         if efeito["tempo"] <= 0:
             efeitos.remove(efeito)
 
-    # inimigos
-    for inimigo in inimigos:
+    # particulas
+    for p in particulas[:]:
 
-        cor = "purple" if inimigo["boss"] else "red"
+        p["x"] += p["dx"]
+        p["y"] += p["dy"]
 
-        nome = "BOSS" if inimigo["boss"] else "Bandit"
+        p["vida"] -= 1
 
-        desenhar_personagem(
-            inimigo["x"],
-            inimigo["y"],
-            cor,
-            nome
+        canvas.create_oval(
+            p["x"] - 2 - camera_x,
+            p["y"] - 2 - camera_y,
+
+            p["x"] + 2 - camera_x,
+            p["y"] + 2 - camera_y,
+
+            fill=p["cor"],
+            outline=""
         )
 
-        # vida
-        canvas.create_rectangle(
-            inimigo["x"]-25,
-            inimigo["y"]-55,
+        if p["vida"] <= 0:
+            particulas.remove(p)
 
-            inimigo["x"]+25,
-            inimigo["y"]-48,
-
-            fill="gray"
-        )
-
-        vida = (
-            inimigo["vida"] /
-            inimigo["max_vida"]
-        ) * 50
-
-        canvas.create_rectangle(
-            inimigo["x"]-25,
-            inimigo["y"]-55,
-
-            inimigo["x"]-25+vida,
-            inimigo["y"]-48,
-
-            fill="lime"
-        )
-
+    # =====================================================
     # HUD
-    canvas.create_text(
-        120,20,
-        text=f"VIDA {int(player['vida'])}",
-        font=("Arial",12,"bold")
-    )
+    # =====================================================
 
+    # vida
     canvas.create_rectangle(
-        20,30,
-        220,50,
+        20, 20,
+        260, 45,
         fill="gray"
     )
 
     vida_barra = (
         player["vida"] /
         player["max_vida"]
-    ) * 200
+    ) * 240
 
     canvas.create_rectangle(
-        20,30,
-        20+vida_barra,50,
+        20, 20,
+        20 + vida_barra,
+        45,
         fill="red"
     )
 
     # energia
-    canvas.create_text(
-        120,70,
-        text="ENERGIA",
-        font=("Arial",12,"bold")
-    )
-
     canvas.create_rectangle(
-        20,80,
-        220,100,
+        20, 55,
+        260, 80,
         fill="gray"
     )
 
-    energia = (
+    energia_barra = (
         player["energia"] /
         player["max_energia"]
-    ) * 200
+    ) * 240
 
     canvas.create_rectangle(
-        20,80,
-        20+energia,100,
+        20, 55,
+        20 + energia_barra,
+        80,
         fill="cyan"
     )
 
-    # xp
-    xp_need = player["level"] * 60
-
-    xp_bar = (
-        player["xp"] /
-        xp_need
-    ) * 200
-
+    # textos
     canvas.create_text(
-        120,120,
+        140, 110,
         text=f"LEVEL {player['level']}",
-        font=("Arial",12,"bold")
+        font=("Arial", 13, "bold")
     )
 
-    canvas.create_rectangle(
-        20,130,
-        220,150,
-        fill="gray"
-    )
-
-    canvas.create_rectangle(
-        20,130,
-        20+xp_bar,150,
-        fill="yellow"
-    )
-
-    # dinheiro
     canvas.create_text(
-        120,190,
+        140, 140,
         text=f"$ {player['money']}",
         fill="green",
-        font=("Arial",16,"bold")
-    )
-
-    # kills
-    canvas.create_text(
-        120,220,
-        text=f"KILLS {player['kills']}",
-        fill="white",
-        font=("Arial",12,"bold")
-    )
-
-    # quest
-    status = (
-        "COMPLETA"
-        if quest["completa"]
-        else f"{quest['progresso']}/{quest['objetivo']}"
+        font=("Arial", 13, "bold")
     )
 
     canvas.create_text(
-        1100,20,
-        text=quest["nome"],
-        font=("Arial",12,"bold")
+        140, 170,
+        text=f"KILLS: {player['kills']}",
+        font=("Arial", 13, "bold")
     )
 
+    # fruta atual
     canvas.create_text(
-        1100,50,
-        text=status,
-        fill="yellow",
-        font=("Arial",12,"bold")
+        140,
+        210,
+
+        text=f"FRUTA: {player['fruta']}",
+
+        fill=frutas[player["fruta"]]["cor"],
+
+        font=("Arial", 14, "bold")
     )
-
-    # inventário
-    canvas.create_text(
-        1100,100,
-        text="INVENTARIO",
-        font=("Arial",12,"bold")
-    )
-
-    y_inv = 130
-
-    for item in inventario:
-
-        canvas.create_text(
-            1100,y_inv,
-            text=f"- {item}",
-            fill="white",
-            font=("Arial",10,"bold")
-        )
-
-        y_inv += 25
 
     # controles
-    controles = [
-        "SETAS = mover",
-        "SHIFT = dash",
-        "SPACE = espada",
-        "F = fruta",
-        "H = haki",
-        "T = transformação",
-        "B = barco"
-    ]
+    canvas.create_text(
+        1080,
+        40,
 
-    y_txt = 300
+        text="SETAS = mover",
+        font=("Arial", 11, "bold")
+    )
 
-    for c in controles:
+    canvas.create_text(
+        1080,
+        70,
 
-        canvas.create_text(
-            1150,
-            y_txt,
-            text=c,
-            font=("Arial",11,"bold")
-        )
+        text="SPACE = espada",
+        font=("Arial", 11, "bold")
+    )
 
-        y_txt += 30
+    canvas.create_text(
+        1080,
+        100,
+
+        text="F = fruta",
+        font=("Arial", 11, "bold")
+    )
+
+    canvas.create_text(
+        1080,
+        130,
+
+        text="Pegue frutas pelo mapa",
+        fill="white",
+
+        font=("Arial", 10, "bold")
+    )
 
     # game over
     if player["vida"] <= 0:
 
         canvas.create_text(
-            LARGURA//2,
-            ALTURA//2,
+            LARGURA // 2,
+            ALTURA // 2,
 
             text="GAME OVER",
-
             fill="red",
-            font=("Arial",70,"bold")
+
+            font=("Arial", 70, "bold")
         )
 
         return
